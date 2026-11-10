@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sal y Luz · Candelero Comunitario SSCC</title>
+  <style>
+    :root {
+      --bg-dark: #070b19;
+      --bg-warm: #1b2845;
+      --gold: #ffbe0b;
+      --amber: #fb5607;
+      --crimson: #a62b2b;
+      --text-light: #fdfbf7;
+      --text-muted: #a8b2d1;
+      --brightness: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: radial-gradient(
+        circle at 50% 55%,
+        rgba(255, 180, 50, calc(var(--brightness) * 0.42)),
+        rgba(27, 54, 93, calc(0.22 + var(--brightness) * 0.5)) 48%,
+        var(--bg-dark) 92%
+      );
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background 1.5s ease;
+    }
+
+    /* Header minimalista y limpio */
+    header {
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(7, 11, 25, 0.75);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 190, 11, 0.2);
+      z-index: 20;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand span.sub {
+      font-size: 0.68rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .brand h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Esquina superior derecha: solo 2 botones sin texto */
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-light);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--gold);
+    }
+
+    /* Main Layout */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      position: relative;
+      height: calc(100dvh - 60px);
+      transition: all 0.4s ease;
+    }
+
+    .quote-banner {
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 190, 11, 0.15);
+      z-index: 10;
+      transition: all 0.4s ease;
+    }
+
+    .quote-banner p {
+      font-style: italic;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    /* En modo normal: las velas NO aparecen, solo el formulario centrado */
+    .candelabrum-stage {
+      display: none;
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Modo pantalla completa activo:
+       - Oculta header y formulario
+       - Muestra solo la cita del Evangelio y el lienzo aleatorio de velas */
+    body.fullscreen-mode header,
+    body.fullscreen-mode .interaction-dock {
+      display: none !important;
+    }
+
+    body.fullscreen-mode main {
+      height: 100dvh;
+      padding: 1.25rem 1.5rem;
+      justify-content: flex-start;
+    }
+
+    body.fullscreen-mode .quote-banner {
+      background: rgba(7, 11, 25, 0.55);
+      border-color: rgba(255, 190, 11, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+    body.fullscreen-mode .candelabrum-stage {
+      display: block;
+    }
+
+    /* Vela individual colocada de forma aleatoria en pantalla completa */
+    .candle-card {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 175px;
+      animation: appearRandom 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      cursor: pointer;
+      transition: transform 0.25s ease, z-index 0s;
+    }
+
+    .candle-card:hover {
+      z-index: 60 !important;
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    @keyframes appearRandom {
+      from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 25px)) scale(0.85);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .commitment-bubble {
+      background: rgba(17, 29, 53, 0.92);
+      border: 1px solid rgba(255, 190, 11, 0.45);
+      border-radius: 12px;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.8rem;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 18px rgba(255, 190, 11, 0.16);
+      width: 100%;
+      position: relative;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+    }
+
+    .commitment-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 10px;
+      height: 10px;
+      background: rgba(17, 29, 53, 0.95);
+      border-right: 1px solid rgba(255, 190, 11, 0.45);
+      border-bottom: 1px solid rgba(255, 190, 11, 0.45);
+    }
+
+    .commitment-type {
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+      display: block;
+    }
+
+    .commitment-text {
+      font-size: 0.82rem;
+      color: #fff;
+      line-height: 1.32;
+      margin-bottom: 0.3rem;
+      word-wrap: break-word;
+    }
+
+    .commitment-author {
+      font-size: 0.72rem;
+      color: var(--gold);
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    /* Llama y cera */
+    .flame-wrapper {
+      position: relative;
+      width: 26px;
+      height: 38px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .flame-glow {
+      position: absolute;
+      width: 85px;
+      height: 85px;
+      background: radial-gradient(circle, rgba(255, 190, 11, 0.55) 0%, rgba(251, 86, 7, 0.2) 50%, transparent 75%);
+      border-radius: 50%;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      animation: flickerGlow 3s infinite alternate;
+    }
+
+    .flame {
+      width: 15px;
+      height: 26px;
+      background: linear-gradient(to top, #3a86ff 0%, #fb5607 30%, #ffbe0b 75%, #fff 100%);
+      border-radius: 50% 50% 35% 35% / 60% 60% 40% 40%;
+      box-shadow: 0 0 14px #ffbe0b, 0 0 28px #fb5607;
+      animation: flicker 2.2s infinite ease-in-out alternate;
+      transform-origin: 50% 90%;
+    }
+
+    @keyframes flicker {
+      0% { transform: rotate(-2deg) scaleY(1); }
+      35% { transform: rotate(2deg) scaleY(1.06) scaleX(0.96); }
+      70% { transform: rotate(-1deg) scaleY(0.96) scaleX(1.03); }
+      100% { transform: rotate(2deg) scaleY(1.04); }
+    }
+
+    @keyframes flickerGlow {
+      0% { opacity: 0.75; transform: translateX(-50%) scale(0.95); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+    }
+
+    .wick {
+      width: 2px;
+      height: 5px;
+      background: #333;
+      margin-top: -2px;
+    }
+
+    .wax {
+      width: 30px;
+      height: 48px;
+      background: linear-gradient(90deg, #e8dcc8, #fdfbf7 45%, #d5c5ae);
+      border-radius: 4px 4px 2px 2px;
+      box-shadow: inset 0 4px 6px rgba(255, 190, 11, 0.35), 0 6px 14px rgba(0, 0, 0, 0.6);
+      border-bottom: 4px solid var(--gold);
+    }
+
+    /* Formulario centrado en modo participante */
+    .interaction-dock {
+      background: rgba(13, 21, 42, 0.94);
+      border: 1px solid rgba(255, 190, 11, 0.32);
+      border-radius: 16px;
+      padding: 1.25rem;
+      max-width: 680px;
+      width: 100%;
+      margin: auto;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      z-index: 15;
+    }
+
+    .dock-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .dock-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 640px) {
+      .dock-row {
+        grid-template-columns: 1fr;
+      }
+      .candle-card {
+        width: 145px;
+      }
+    }
+
+    /* 16px font-size evita el auto-zoom en iPhone/iOS Safari */
+    input, select {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--gold);
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    select option {
+      background: #111a2e;
+      color: #fff;
+    }
+
+    .btn-primary {
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(135deg, var(--gold), var(--amber));
+      color: #111;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 190, 11, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-outline {
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-light);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Modal QR */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 80;
+      padding: 1rem;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #131f3a;
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 1.4rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(255, 190, 11, 0.25);
+    }
+
+    .modal-card h3 {
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-card p {
+      font-size: 0.86rem;
+      color: #cbd5e1;
+      margin-bottom: 0.9rem;
+    }
+
+    .qr-box {
+      background: #fff;
+      padding: 0.75rem;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: 0.9rem;
+    }
+
+    .room-config {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .room-config input {
+      flex: 1;
+      text-align: center;
+    }
+
+    .toast-feedback {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-feedback" id="toastMsg">✨ Tu vela se ha encendido en el candelero</div>
+
+  <header>
+    <div class="brand">
+      <span class="sub">Aspirantes a Salesianos Cooperadores</span>
+      <h1>Mateo 5, 13-16</h1>
+    </div>
+    <!-- Esquina superior derecha: solo botón QR y botón Pantalla Completa sin texto -->
+    <div class="top-controls">
+      <button class="icon-btn" onclick="toggleQRModal()" title="Código QR / Sala">📱</button>
+      <button class="icon-btn" id="fsBtn" onclick="enterFullScreenMode()" title="Pantalla completa">⛶</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="quote-banner">
+      <p>«Brille así vuestra luz ante los hombres, para que vean vuestras buenas obras y den gloria a vuestro Padre que está en los cielos» (Mt 5, 16)</p>
+    </div>
+
+    <!-- Lienzo de velas: oculto en modo normal, visible y aleatorio en modo pantalla completa -->
+    <section class="candelabrum-stage" id="candelabrumStage"></section>
+
+    <!-- Formulario para encender la vela (se oculta en modo pantalla completa) -->
+    <section class="interaction-dock">
+      <form class="dock-form" id="candleForm" onsubmit="submitCommitment(event)">
+        <div class="dock-row">
+          <input type="text" id="userName" placeholder="Tu nombre (ej. Ale)" required maxlength="28" autocomplete="given-name" />
+          <select id="symbolType">
+            <option value="🕯️ Quiero ser Luz">🕯️ Ser Luz en...</option>
+            <option value="🧂 Quiero ser Sal">🧂 Ser Sal en...</option>
+          </select>
+        </div>
+        <input type="text" id="userCommitment" placeholder="Escribe dónde darás sabor o luz esta semana..." required maxlength="110" autocomplete="off" />
+        <button type="submit" class="btn-primary" id="submitBtn">Encender Luz ✨</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Modal QR y Configuración de Sala -->
+  <div class="modal-backdrop" id="qrModal">
+    <div class="modal-card">
+      <h3>Unirse al Candelero Online</h3>
+      <p>Escanea el código QR desde tu móvil o comparte el enlace en el chat:</p>
+      <div class="qr-box">
+        <img id="qrImage" src="" alt="Código QR de la oración" width="185" height="185" />
+      </div>
+      <div class="room-config">
+        <input type="text" id="roomInput" value="" placeholder="Código de sala" />
+        <button class="btn-primary" onclick="changeRoom()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem;">Cambiar</button>
+      </div>
+      <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+        <button class="btn-outline" onclick="copyShareLink()">📋 Copiar enlace</button>
+        <button class="btn-outline" onclick="clearBoard()">🧹 Limpiar</button>
+        <button class="btn-outline" onclick="toggleQRModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentRoom = (urlParams.get('sala') || 'sscc_oracion_mateo5_luz').replace(/[^a-zA-Z0-9_-]/g, '_');
+    let eventSource = null;
+    let pollTimer = null;
+    const renderedIds = new Set();
+    const placedPositions = []; // Guarda coordenadas (x%, y%) para repartir las velas de forma aleatoria sin solaparlas
+    let candleCount = 0;
+    let sharedAudioCtx = null;
+    let isFullscreen = false;
+
+    document.getElementById('roomInput').value = currentRoom;
+
+    function unlockMobileAudio() {
+      try {
+        if (!sharedAudioCtx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) sharedAudioCtx = new AudioCtx();
+        }
+        if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+          sharedAudioCtx.resume();
+        }
+      } catch (e) {}
+    }
+    document.addEventListener('touchstart', unlockMobileAudio, { once: true, passive: true });
+    document.addEventListener('click', unlockMobileAudio, { once: true, passive: true });
+
+    function playChime() {
+      if (!isFullscreen) return; // Solo suena en el modo pantalla completa donde se ven las velas
+      try {
+        unlockMobileAudio();
+        if (!sharedAudioCtx || sharedAudioCtx.state !== 'running') return;
+        const osc = sharedAudioCtx.createOscillator();
+        const gain = sharedAudioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(528, sharedAudioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(660, sharedAudioCtx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.07, sharedAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, sharedAudioCtx.currentTime + 1.5);
+        osc.connect(gain);
+        gain.connect(sharedAudioCtx.destination);
+        osc.start();
+        osc.stop(sharedAudioCtx.currentTime + 1.5);
+      } catch (e) {}
+    }
+
+    function enterFullScreenMode() {
+      isFullscreen = true;
+      document.body.classList.add('fullscreen-mode');
+      updateRoomIllumination();
+      // Solicitar pantalla completa nativa del navegador si está disponible
+      try {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function exitFullScreenMode() {
+      isFullscreen = false;
+      document.body.classList.remove('fullscreen-mode');
+      document.documentElement.style.setProperty('--brightness', '0');
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    // Salir de pantalla completa con la tecla Esc o haciendo doble clic / doble toque en el fondo
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        exitFullScreenMode();
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        exitFullScreenMode();
+      }
+    });
+
+    document.getElementById('candelabrumStage').addEventListener('dblclick', () => {
+      if (isFullscreen) exitFullScreenMode();
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toastMsg');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2800);
+    }
+
+    function updateRoomIllumination() {
+      if (!isFullscreen) {
+        document.documentElement.style.setProperty('--brightness', '0');
+        return;
+      }
+      const ratio = Math.min(1, candleCount / 8);
+      document.documentElement.style.setProperty('--brightness', ratio.toFixed(2));
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Genera una posición aleatoria en pantalla evitando solaparse con las velas ya existentes
+    function getRandomScreenPosition() {
+      const minX = 10, maxX = 90; // % horizontal seguro
+      const minY = 20, maxY = 82; // % vertical seguro dentro del lienzo
+
+      let bestPos = { x: 50, y: 50 };
+      let maxMinDist = -1;
+      const candidates = 28;
+
+      for (let i = 0; i < candidates; i++) {
+        const cx = minX + Math.random() * (maxX - minX);
+        const cy = minY + Math.random() * (maxY - minY);
+
+        if (placedPositions.length === 0) {
+          bestPos = { x: cx, y: cy };
+          break;
+        }
+
+        let nearestDist = Infinity;
+        for (const p of placedPositions) {
+          const dx = cx - p.x;
+          const dy = (cy - p.y) * 1.25; // compensar proporción vertical de la vela + tarjeta
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < nearestDist) nearestDist = d;
+        }
+
+        if (nearestDist > maxMinDist) {
+          maxMinDist = nearestDist;
+          bestPos = { x: cx, y: cy };
+        }
+      }
+
+      placedPositions.push(bestPos);
+      return bestPos;
+    }
+
+    function renderCandle(item, playSound = true) {
+      if (!item) return;
+      const uniqueKey = item.clientId || item.id;
+      if (!uniqueKey || renderedIds.has(uniqueKey)) return;
+      renderedIds.add(uniqueKey);
+      if (item.id) renderedIds.add(item.id);
+
+      const stage = document.getElementById('candelabrumStage');
+      const card = document.createElement('div');
+      card.className = 'candle-card';
+
+      // Asignar coordenadas aleatorias en la pantalla
+      const pos = getRandomScreenPosition();
+      card.style.left = `${pos.x.toFixed(2)}%`;
+      card.style.top = `${pos.y.toFixed(2)}%`;
+      card.style.zIndex = String(10 + Math.round(pos.y));
+
+      const safeType = escapeHtml(item.type || '🕯️ Quiero ser Luz');
+      const safeText = escapeHtml(item.text || '');
+      const safeName = escapeHtml(item.name || 'Aspirante SSCC');
+      const randomDelay = (Math.random() * 1.8).toFixed(2);
+
+      card.innerHTML = `
+        <div class="commitment-bubble">
+          <span class="commitment-type">${safeType}</span>
+          <div class="commitment-text">«${safeText}»</div>
+          <div class="commitment-author">— ${safeName}</div>
+        </div>
+        <div class="flame-wrapper">
+          <div class="flame-glow" style="animation-delay: -${randomDelay}s"></div>
+          <div class="flame" style="animation-delay: -${randomDelay}s"></div>
+        </div>
+        <div class="wick"></div>
+        <div class="wax"></div>
+      `;
+
+      stage.appendChild(card);
+      candleCount++;
+      updateRoomIllumination();
+      if (playSound) playChime();
+    }
+
+    function processRawMessage(wrapper, playSound = true) {
+      try {
+        if (wrapper && wrapper.event === 'message' && wrapper.message) {
+          const payload = JSON.parse(wrapper.message);
+          payload.id = wrapper.id || payload.id;
+          renderCandle(payload, playSound);
+        }
+      } catch (e) {}
+    }
+
+    async function pollRoomMessages(playSound = false) {
+      try {
+        const pollUrl = `https://ntfy.sh/${encodeURIComponent(currentRoom)}/json?poll=1&since=3h&_t=${Date.now()}`;
+        const res = await fetch(pollUrl, { cache: 'no-store' });
+        if (!res.ok) return;
+        const text = await res.text();
+        const lines = text.split('\n');
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const wrapper = JSON.parse(line);
+            processRawMessage(wrapper, playSound);
+          } catch (e) {}
+        }
+      } catch (err) {}
+    }
+
+    function connectRealtimeRoom(roomName) {
+      if (eventSource) {
+        try { eventSource.close(); } catch (e) {}
+      }
+      if (pollTimer) clearInterval(pollTimer);
+
+      pollRoomMessages(false);
+
+      try {
+        const sseUrl = `https://ntfy.sh/${encodeURIComponent(roomName)}/sse?since=3h`;
+        eventSource = new EventSource(sseUrl);
+        eventSource.onmessage = (event) => {
+          try {
+            const wrapper = JSON.parse(event.data);
+            processRawMessage(wrapper, true);
+          } catch (err) {}
+        };
+      } catch (e) {}
+
+      pollTimer = setInterval(() => {
+        pollRoomMessages(true);
+      }, 5000);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        pollRoomMessages(true);
+      }
+    });
+    window.addEventListener('focus', () => pollRoomMessages(true));
+
+    async function submitCommitment(e) {
+      e.preventDefault();
+      unlockMobileAudio();
+
+      const btn = document.getElementById('submitBtn');
+      const nameInput = document.getElementById('userName');
+      const typeInput = document.getElementById('symbolType');
+      const commInput = document.getElementById('userCommitment');
+
+      const nameVal = nameInput.value.trim();
+      const commVal = commInput.value.trim();
+      if (!nameVal || !commVal) return;
+
+      const clientId = 'cid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+      const payload = {
+        clientId: clientId,
+        name: nameVal,
+        type: typeInput.value,
+        text: commVal
+      };
+
+      renderCandle(payload, false);
+      commInput.value = '';
+      commInput.blur();
+      showToast('✨ Tu vela se ha encendido en el candelero');
+
+      btn.disabled = true;
+      btn.textContent = 'Enviada ✓';
+
+      try {
+        await fetch(`https://ntfy.sh/${encodeURIComponent(currentRoom)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {} finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Encender Luz ✨';
+        }, 800);
+      }
+    }
+
+    function toggleQRModal() {
+      const modal = document.getElementById('qrModal');
+      modal.classList.toggle('active');
+      if (modal.classList.contains('active')) {
+        updateQRCode();
+      }
+    }
+
+    function getShareableUrl() {
+      const url = new URL(window.location.href);
+      url.searchParams.set('sala', currentRoom);
+      return url.toString();
+    }
+
+    function updateQRCode() {
+      const shareUrl = getShareableUrl();
+      const qrImg = document.getElementById('qrImage');
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+    }
+
+    function changeRoom() {
+      const newRoom = document.getElementById('roomInput').value.trim();
+      if (!newRoom) return;
+      currentRoom = newRoom.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const url = new URL(window.location.href);
+      url.searchParams.set('sala', currentRoom);
+      window.history.replaceState({}, '', url);
+      clearBoard();
+      connectRealtimeRoom(currentRoom);
+      updateQRCode();
+    }
+
+    async function copyShareLink() {
+      const link = getShareableUrl();
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(link);
+          showToast('📋 Enlace copiado al portapapeles');
+          return;
+        }
+      } catch (e) {}
+      const tempInput = document.createElement('input');
+      tempInput.value = link;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast('📋 Enlace copiado al portapapeles');
+    }
+
+    function clearBoard() {
+      document.getElementById('candelabrumStage').innerHTML = '';
+      renderedIds.clear();
+      placedPositions.length = 0;
+      candleCount = 0;
+      updateRoomIllumination();
+    }
+
+    connectRealtimeRoom(currentRoom);
+  </script>
+</body>
+</html>
